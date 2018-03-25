@@ -67,7 +67,11 @@ busybox-menuconfig:
 
 boot:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic  \
-	-mtdblock $(ROOT_DIR)/image/nand.bin  -sd ./sd.img
+	-mtdblock $(ROOT_DIR)/image/nand.bin  
+boot-ui:
+	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio \
+	-mtdblock $(ROOT_DIR)/image/nand.bin  \
+	-usb -usbdevice keyboard -usbdevice mouse -show-cursor
 
 boot-nfs:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic -kernel ./image/uImage \
