@@ -1,12 +1,13 @@
 .PHONY: boot kernel uboot kernel-modules kernel-menuconfig \
 	nand busybox-defconfig busybox busybox-install boot-nfs \
 	qemu qemu-config uboot uboot-defconfig kernel-defconfig \
-	rootfs
+	rootfs modules-copy
 
-ROOT_DIR=`pwd`
+ROOT_DIR:=$(shell pwd)
 
 KERNEL_DIR=/home/teddy/work/linux-rpi/linux-rpi-4.4.y
 #KERNEL_DIR=kernel/linux-2.6.35.1
+#KERNEL_DIR=kernel/linux-3.10
 IMG_DIR=./image
 BUSYBOX_DIR=./busybox/busybox-1.27.2
 QEMU_DIR=./qemu
@@ -41,7 +42,8 @@ kernel-defconfig:
 	cd $(KERNEL_DIR); make ARCH=arm CROSS_COMPILE=arm-none-eabi- mini2440_defconfig ;cd -
 kernel-modules:
 	cd $(KERNEL_DIR); make ARCH=arm CROSS_COMPILE=arm-none-eabi- modules;cd -
-	
+modules-copy:
+	cd $(KERNEL_DIR); find ./drivers -name "*.ko" -exec cp {} $(ROOT_DIR)/nfs/ko \; ;cd -
 kernel-menuconfig:
 	cd $(KERNEL_DIR); make ARCH=arm CROSS_COMPILE=arm-none-eabi- menuconfig;cd -
 uboot:
@@ -67,7 +69,12 @@ busybox-menuconfig:
 
 boot:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic  \
-	-mtdblock $(ROOT_DIR)/image/nand.bin  
+	-mtdblock $(ROOT_DIR)/image/nand.bin 
+	
+boot-usb:
+	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic  \
+	-mtdblock $(ROOT_DIR)/image/nand.bin  -usb -usbdevice disk::./usb.img
+	
 boot-ui:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio \
 	-mtdblock $(ROOT_DIR)/image/nand.bin  \

@@ -1,0 +1,41 @@
+#!/bin/sh
+
+
+if [ ! -d /proc ]; then
+    echo "/proc not exist, now create it"
+    mkdir /proc
+fi
+mount -t proc proc /proc
+
+
+if [ ! -d /sys ]; then
+    echo "/sys not exist, now create it"
+    mkdir /sys
+fi
+mount -t sysfs sysfs /sys
+
+if [ ! -d /dev/pts ]; then
+    echo "/dev/pts not exist, now creat it"
+    mkdir /dev/pts
+fi
+mount -t devpts devpts /dev/pts
+
+
+
+if [ ! -d /mnt ]; then
+    echo "/mnt not exist, now create it"
+    mkdir /mnt
+fi
+
+#cd /ko
+#insmod scsi_mod.ko
+#insmod sd_mod.ko 
+#insmod usb-storage.ko
+#cd -
+
+mdev -s
+
+ifconfig eth0 192.168.0.2 netmask 255.255.255.0
+
+
+
