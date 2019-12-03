@@ -1,2 +1,12 @@
 qemu/*
 .vscode
+kernel
+image
+uboot/*
+busybox/*
+code/flashimg-master
+nfs/bin
+nfs/linuxrc
+nfs/sbin
+nfs/usr
+code/linux-2.6.35.tgz
