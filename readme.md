@@ -16,6 +16,10 @@ teddy@teddy-ubuntu:~/work/mini2440-lab$ tree -L 1
 
 
 
+下载需要的工具和代码。
+
+
+
 # 使用方法
 
 1、编译qemu。

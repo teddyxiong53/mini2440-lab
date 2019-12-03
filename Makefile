@@ -14,27 +14,41 @@ QEMU_DIR=./qemu
 
 UBOOT_DIR=./uboot/uboot
 
-ARCH=arm 
+ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabi-
 export ARCH CROSS_COMPILE
 
 help:
 	@cat readme.md
 	@echo ""
+pc-prepare:
+	# install tools
+	sudo apt-get install libsdl1.2-dev -y
+	sudo apt-get install -y libgnutls-dev
+qemu-prepare:
+	# unzip file to qemu dir
+	if [ ! -d ./qemu ]; then \
+		tar -xf code/qemu.tar.gz -C ./; \
+	fi
+	# patch to compile ok
+	cp code/qemu-patch/Makefile.target ./qemu -f
+
+uboot-prepare:
 
 qemu-config:
-	cd $(QEMU_DIR); ./configure --target-list=arm-softmmu; cd -
-	
+	cd $(QEMU_DIR); ./configure --target-list=arm-softmmu --disable-sdl --disable-vnc-tls --disable-gfx-check; cd -
+
 qemu:
 	cd $(QEMU_DIR); make -j4; cd -
-
+qemu-clean:
+	cd $(QEMU_DIR); make clean; cd -
 uboot:
 	cd $(UBOOT_DIR); make -j4; cd -
-	
+
 uboot-defconfig:
 	cd $(UBOOT_DIR); make mini2440_config; cd -
-	
-	
+
+
 kernel:
 	cd $(KERNEL_DIR); make ARCH=arm CROSS_COMPILE=arm-none-eabi- uImage -j4;cd -
 	cp $(KERNEL_DIR)/arch/arm/boot/uImage $(IMG_DIR) -f
@@ -49,32 +63,32 @@ kernel-menuconfig:
 uboot:
 	cd uboot/uboot; make ARCH=arm CROSS_COMPILE=arm-none-eabi- -j4; cd -
 	cp uboot/uboot/u-boot.bin $(IMG_DIR) -f
-	
+
 rootfs:
-	mkfs.jffs2 -n -s 512 -e 16KiB -d ./nfs -o ./image/rootfs.jffs2 
-	
+	mkfs.jffs2 -n -s 512 -e 16KiB -d ./nfs -o ./image/rootfs.jffs2
+
 nand:
 	cd $(IMG_DIR) ;flashimg -s 64M -t nand -f nand.bin -p uboot.part -w boot,u-boot.bin -w kernel,uImage -w root,rootfs.jffs2 -z 512 ;cd -
-	
-	
+
+
 busybox-defconfig:
 	make -C $(BUSYBOX_DIR) defconfig
 busybox:
-	make -C $(BUSYBOX_DIR) -j4 
+	make -C $(BUSYBOX_DIR) -j4
 busybox-install:
 	make -C $(BUSYBOX_DIR) install CONFIG_PREFIX=$(ROOT_DIR)/nfs
 busybox-menuconfig:
 	make -C $(BUSYBOX_DIR) menuconfig
-	
+
 
 boot:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic  \
-	-mtdblock $(ROOT_DIR)/image/nand.bin 
-	
+	-mtdblock $(ROOT_DIR)/image/nand.bin
+
 boot-usb:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio -nographic  \
 	-mtdblock $(ROOT_DIR)/image/nand.bin  -usb -usbdevice disk::./usb.img
-	
+
 boot-ui:
 	$(ROOT_DIR)/qemu/arm-softmmu/qemu-system-arm  -M mini2440 -serial stdio \
 	-mtdblock $(ROOT_DIR)/image/nand.bin  \
